@@ -1,10 +1,7 @@
 version: '3'
 services:
   web:
-    build:
-      context: .
-      args:
-        REDMINE_VERSION: $REDMINE_VERSION
+    image: redmine_sqlite3
     command: bundle exec rails s -p 3000 -b '0.0.0.0'
     environment:
       RAILS_ENV: development
@@ -12,3 +9,17 @@ services:
       - .:/tmp/redmine/plugins/redmine_issue_badge
     ports:
       - "3000:3000"
+    depends_on:
+      - migration
+  migration:
+    build:
+      context: .
+      args:
+        redmine_version: $redmine_version
+        redmine_database: sqlite3
+    image: redmine_sqlite3
+    command: bash -c 'rake db:migrate && rake redmine_plugins:migrate'
+    environment:
+      RAILS_ENV: development
+    volumes:
+      - .:/tmp/redmine/plugins/redmine_issue_badge
